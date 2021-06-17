@@ -3,27 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/ad_views">
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="308dp"
-        android:layout_height="287dp"
+        android:layout_width="372dp"
+        android:layout_height="304dp"
         android:layout_marginTop="28dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/music" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/songTitle"
         android:layout_width="0dp"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:ellipsize="marquee"
-        android:scrollHorizontally="true"
-        android:singleLine="true"
-        android:fadingEdge="horizontal"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginLeft="24dp"
@@ -31,7 +26,12 @@
         android:layout_marginEnd="24dp"
         android:layout_marginRight="24dp"
         android:layout_marginBottom="90dp"
+        android:ellipsize="marquee"
+        android:fadingEdge="horizontal"
         android:gravity="center"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/textview"
         android:textColor="@color/design_default_color_primary_dark"
         android:textSize="20sp"
@@ -44,6 +44,9 @@
 
     <SeekBar
         android:id="@+id/mSeekBar"
+        android:progressBackgroundTint="@color/black"
+        android:progressTint="@color/black"
+        android:outlineSpotShadowColor="@color/black"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -65,6 +68,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="@string/_00_00"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/mSeekBar"
         app:layout_constraintEnd_toStartOf="@+id/mSeekBar"
@@ -80,6 +84,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="@string/_05_00"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/mSeekBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -142,5 +147,20 @@
         app:layout_constraintStart_toEndOf="@+id/nextIcon"
         app:layout_constraintTop_toTopOf="@+id/nextIcon"
         app:srcCompat="@drawable/suffle_default" />
+
+    <TextView
+        android:textColor="@color/black"
+        android:id="@+id/songArtist"
+        android:layout_width="334dp"
+        android:layout_height="25dp"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/mSeekBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/songTitle"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
