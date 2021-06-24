@@ -28,7 +28,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
 
     public MusicAdapter(Context mContext, ArrayList<MusicFiles> mFiles) {
         this.mContext = mContext;
-        this.mFiles = mFiles;
+        MusicAdapter.mFiles = mFiles;
     }
 
     @NonNull
@@ -58,18 +58,15 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
                     .load(R.drawable.music)
                     .into(holder.song_Thumbnail);
         }
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        holder.itemView.setOnClickListener(v -> {
 
-                Intent intent = new Intent(mContext, PlaySong.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra("Position",position);
-                intent.putExtra("Song Images", image);
-                intent.putExtra("position", position);
-                mContext.startActivity(intent);
+            Intent intent = new Intent(mContext, PlaySong.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("Position",position);
+            intent.putExtra("Song Images", image);
+            intent.putExtra("position", position);
+            mContext.startActivity(intent);
 
-            }
         });
     }
 

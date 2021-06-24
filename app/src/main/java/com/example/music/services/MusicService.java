@@ -2,8 +2,6 @@ package com.example.music.services;
 
 import android.app.Service;
 import android.content.Intent;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 
@@ -18,8 +16,6 @@ import static com.example.music.PlaySong.listOfSongs;
 
 public class MusicService extends Service{
     IBinder iBinder = new MyBinder();
-    MediaPlayer mediaPlayer;
-    Uri uri;
     ArrayList<MusicFiles> musicFiles = new ArrayList<>();
     ActionPlay playSong;
 
