@@ -28,15 +28,19 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.bumptech.glide.Glide;
+import com.example.music.Notification.NotificationReceiver;
+import com.example.music.services.MusicService;
+import com.example.music.utlities.ActionPlay;
+import com.example.music.utlities.MusicFiles;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-import static com.example.music.ApplicationClass.ACTION_NEXT;
-import static com.example.music.ApplicationClass.ACTION_PLAY;
-import static com.example.music.ApplicationClass.ACTION_PREV;
-import static com.example.music.ApplicationClass.CHANNEL_ID;
-import static com.example.music.MusicAdapter.mFiles;
+import static com.example.music.Notification.ApplicationClass.ACTION_NEXT;
+import static com.example.music.Notification.ApplicationClass.ACTION_PLAY;
+import static com.example.music.Notification.ApplicationClass.ACTION_PREV;
+import static com.example.music.Notification.ApplicationClass.CHANNEL_ID;
+import static com.example.music.Adapter.MusicAdapter.mFiles;
 
 public class PlaySong extends AppCompatActivity implements ServiceConnection, ActionPlay {
 
@@ -44,7 +48,7 @@ public class PlaySong extends AppCompatActivity implements ServiceConnection, Ac
     TextView songTitle, songArtist, curTime, totTime;
     ImageView playIcon;
     ImageView imageView, prevIcon, nextIcon, repeatIcon, shuffleIcon;
-    static ArrayList<MusicFiles> listOfSongs = new ArrayList<>();
+    public static ArrayList<MusicFiles> listOfSongs = new ArrayList<>();
     static MediaPlayer mediaPlayer;
     static Uri uri;
     int position = -1;

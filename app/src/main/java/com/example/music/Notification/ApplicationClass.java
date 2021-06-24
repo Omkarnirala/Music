@@ -1,13 +1,15 @@
-package com.example.music;
+package com.example.music.Notification;
 
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
 
+import com.example.music.R;
+
 public class ApplicationClass extends Application {
 
-    static final String CHANNEL_ID = "Channel1";
+    public static final String CHANNEL_ID = "Channel1";
     public static final String ACTION_NEXT = "NEXT";
     public static final String ACTION_PREV = "PREVIOUS";
     public static final String ACTION_PLAY = "PLAY";

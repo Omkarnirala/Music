@@ -14,7 +14,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
-        android:name=".ApplicationClass"
+        android:name=".Notification.ApplicationClass"
         android:theme="@style/Theme.Music">
         <activity android:name=".PlaySong"
             android:parentActivityName=".MainActivity">
@@ -28,9 +28,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MusicService" android:enabled="true"/>
+        <service android:name=".services.MusicService" android:enabled="true"/>
 
-        <receiver android:name=".NotificationReceiver" android:enabled="true">
+        <receiver android:name=".Notification.NotificationReceiver" android:enabled="true">
             <intent-filter>
                 <action android:name="PLAY"/>
                 <action android:name="PREVIOUS"/>

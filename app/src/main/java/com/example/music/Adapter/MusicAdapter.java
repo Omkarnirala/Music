@@ -1,30 +1,30 @@
-package com.example.music;
+package com.example.music.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.music.utlities.MusicFiles;
+import com.example.music.PlaySong;
+import com.example.music.R;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
 
     private final Context mContext;
-    static ArrayList<MusicFiles> mFiles;
+    public static ArrayList<MusicFiles> mFiles;
 
     public MusicAdapter(Context mContext, ArrayList<MusicFiles> mFiles) {
         this.mContext = mContext;
@@ -100,7 +100,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
         return art;
     }
 
-    void UpdateList(ArrayList<MusicFiles> musicFilesArrayList){
+    public void UpdateList(ArrayList<MusicFiles> musicFilesArrayList){
 
         mFiles = new ArrayList<>();
         mFiles.addAll(musicFilesArrayList);

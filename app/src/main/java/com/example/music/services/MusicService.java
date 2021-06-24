@@ -1,4 +1,4 @@
-package com.example.music;
+package com.example.music.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,9 +6,11 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+
+import com.example.music.utlities.ActionPlay;
+import com.example.music.utlities.MusicFiles;
 
 import java.util.ArrayList;
 
@@ -34,7 +36,7 @@ public class MusicService extends Service{
     }
 
     public class MyBinder extends Binder{
-        MusicService getService(){
+        public MusicService getService(){
             return MusicService.this;
         }
     }
@@ -70,7 +72,7 @@ public class MusicService extends Service{
         return super.onStartCommand(intent, flags, startId);
     }
 
-    void setCallBack(ActionPlay playSong){
+    public void setCallBack(ActionPlay playSong){
         this.playSong = playSong;
     }
 }

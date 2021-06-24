@@ -1,12 +1,14 @@
-package com.example.music;
+package com.example.music.Notification;
 
 import  android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import static com.example.music.ApplicationClass.ACTION_NEXT;
-import static com.example.music.ApplicationClass.ACTION_PLAY;
-import static com.example.music.ApplicationClass.ACTION_PREV;
+import com.example.music.services.MusicService;
+
+import static com.example.music.Notification.ApplicationClass.ACTION_NEXT;
+import static com.example.music.Notification.ApplicationClass.ACTION_PLAY;
+import static com.example.music.Notification.ApplicationClass.ACTION_PREV;
 
 public class NotificationReceiver extends BroadcastReceiver {
     @Override
