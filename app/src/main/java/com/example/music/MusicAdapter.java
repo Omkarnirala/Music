@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
-class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
+public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
 
     private final Context mContext;
     static ArrayList<MusicFiles> mFiles;
@@ -62,10 +62,9 @@ class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
             @Override
             public void onClick(View v) {
 
-//              Toast.makeText(mContext, "Working : " + mFiles.get(position).getPath(), Toast.LENGTH_SHORT).show();
-
                 Intent intent = new Intent(mContext, PlaySong.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("Position",position);
                 intent.putExtra("Song Images", image);
                 intent.putExtra("position", position);
                 mContext.startActivity(intent);
@@ -93,7 +92,7 @@ class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
         }
     }
 
-    private byte[] getAlbumArt(String uri){
+    public byte[] getAlbumArt(String uri){
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(uri);
         byte[] art = retriever.getEmbeddedPicture();

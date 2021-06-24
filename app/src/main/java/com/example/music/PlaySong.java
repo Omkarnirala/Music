@@ -1,62 +1,64 @@
 package com.example.music;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentUris;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
-import android.provider.MediaStore;
-import android.util.Log;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.bumptech.glide.Glide;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static com.example.music.MainActivity.musicFiles;
+import static com.example.music.ApplicationClass.ACTION_NEXT;
+import static com.example.music.ApplicationClass.ACTION_PLAY;
+import static com.example.music.ApplicationClass.ACTION_PREV;
+import static com.example.music.ApplicationClass.CHANNEL_ID;
 import static com.example.music.MusicAdapter.mFiles;
 
-public class PlaySong extends AppCompatActivity {
+public class PlaySong extends AppCompatActivity implements ServiceConnection, ActionPlay {
 
-    String SongTitle;
     SeekBar seekbar;
     TextView songTitle, songArtist, curTime, totTime;
     ImageView playIcon;
-    ImageView imageView ,prevIcon, nextIcon, repeatIcon, suffleIcon, songImage ;
+    ImageView imageView, prevIcon, nextIcon, repeatIcon, shuffleIcon;
     static ArrayList<MusicFiles> listOfSongs = new ArrayList<>();
     static MediaPlayer mediaPlayer;
     static Uri uri;
-    int position = 0;
+    int position = -1;
     String textContent, textContent2;
     boolean isShuffle = false;
     boolean isRepeat = false;
-    private static final String CHANNEL_ID = "Channel1";
+    MusicService musicService;
+    MediaSessionCompat mediaSession;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play);
+
 
         seekbar = findViewById(R.id.mSeekBar);
         songTitle = findViewById(R.id.songTitle);
@@ -69,94 +71,109 @@ public class PlaySong extends AppCompatActivity {
         prevIcon = findViewById(R.id.prevIcon);
         nextIcon = findViewById(R.id.nextIcon);
         repeatIcon = findViewById(R.id.repeatIcon);
-        suffleIcon = findViewById(R.id.suffleIcon);
+        shuffleIcon = findViewById(R.id.suffleIcon);
 
+        mediaSession = new MediaSessionCompat(this, "Music");
         position = getIntent().getIntExtra("position", -1);
         listOfSongs = mFiles;
         initPlayer(position);
-        
+
         playIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                play();
+                playPause();
             }
         });
 
         prevIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (position <= 0) {
-                    position = listOfSongs.size() - 1;
-                } else {
-                    position--;
-                }
-
-                initPlayer(position);
+                previous();
             }
         });
-
 
         nextIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if ((position +1) < listOfSongs.size()) {
-                    position++;
-                } else {
-                    position = 0;
-                }
-                initPlayer(position);
+                next();
             }
         });
 
         repeatIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isRepeat){
+                if (isRepeat) {
                     isRepeat = false;
                     Toast.makeText(getApplicationContext(), "Repeat is OFF", Toast.LENGTH_SHORT).show();
                     repeatIcon.setImageResource(R.drawable.repeat_default);
-                }else{
+                } else {
                     // make repeat to true
                     isRepeat = true;
                     Toast.makeText(getApplicationContext(), "Repeat is ON", Toast.LENGTH_SHORT).show();
                     // make shuffle to false
                     isShuffle = false;
                     repeatIcon.setImageResource(R.drawable.repeat_all);
-                    suffleIcon.setImageResource(R.drawable.suffle_default);
+                    shuffleIcon.setImageResource(R.drawable.suffle_default);
                 }
             }
         });
 
-        suffleIcon.setOnClickListener(new View.OnClickListener() {
+        shuffleIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isShuffle){
+                if (isShuffle) {
                     isShuffle = false;
-                    Toast.makeText(getApplicationContext(), "Shuffle is OFF" , Toast.LENGTH_SHORT).show();
-                    suffleIcon.setImageResource(R.drawable.suffle_default);
-                }else{
+                    Toast.makeText(getApplicationContext(), "Shuffle is OFF", Toast.LENGTH_SHORT).show();
+                    shuffleIcon.setImageResource(R.drawable.suffle_default);
+                } else {
                     // make repeat to true
                     isShuffle = true;
                     Toast.makeText(getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
                     // make shuffle to false
                     isRepeat = false;
-                    suffleIcon.setImageResource(R.drawable.suffle_on);
+                    shuffleIcon.setImageResource(R.drawable.suffle_on);
                     repeatIcon.setImageResource(R.drawable.repeat_default);
                 }
             }
         });
     }
 
+    public void playPause() {
+
+        if (mediaPlayer != null && ! mediaPlayer.isPlaying()) {
+            createNotification(R.drawable.ic_pause_black_24dp);
+            playIcon.setImageResource(R.drawable.ic_pause_black_24dp);
+            uri = Uri.parse(listOfSongs.get(position).getPath());
+            mediaPlayer.start();
+
+        } else if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            createNotification(R.drawable.ic_play_arrow_black_24dp);
+            playIcon.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+        }
+    }
+
+    public void next() {
+        if ((position +1) < listOfSongs.size()) {
+            position++;
+        } else {
+            position = 0;
+        }
+        initPlayer(position);
+    }
+
+    public void previous() {
+        if (position <= 0) {
+            position = listOfSongs.size() - 1;
+        } else {
+            position--;
+        }
+        initPlayer(position);
+    }
+
     private void initPlayer(int position) {
 
-//        if (listOfSongs != null){
-//            playIcon.setImageResource(R.drawable.ic_pause_black_24dp);
-//            uri = Uri.parse(listOfSongs.get(position).getPath());
-//        }if (mediaPlayer != null){
-//            mediaPlayer.stop();
-//            mediaPlayer.release();
-//        }
-        if (mediaPlayer != null && mediaPlayer.isPlaying()){
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.reset();
         }
         uri = Uri.parse(listOfSongs.get(position).getPath());
@@ -172,13 +189,13 @@ public class PlaySong extends AppCompatActivity {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(uri.toString());
         byte[] art = retriever.getEmbeddedPicture();
-        if (art != null){
+        if (art != null) {
             Glide.with(this)
                     .asBitmap()
                     .load(art)
                     .into(imageView);
 
-        }else {
+        } else {
             Glide.with(this)
                     .asBitmap()
                     .load(R.drawable.music)
@@ -192,6 +209,7 @@ public class PlaySong extends AppCompatActivity {
                 totTime.setText(totalTime);
                 seekbar.setMax(mediaPlayer.getDuration());
                 mediaPlayer.start();
+                createNotification(R.drawable.ic_pause_black_24dp);
                 playIcon.setImageResource(R.drawable.ic_pause_black_24dp);
             }
         });
@@ -202,19 +220,19 @@ public class PlaySong extends AppCompatActivity {
                 int curSongPosition = position;
                 // check for repeat is ON or OFF
 
-                if (isRepeat){
+                if (isRepeat) {
                     // repeat is on play same song again
 
                     initPlayer(curSongPosition);
 
-                }else if (isShuffle){
+                } else if (isShuffle) {
                     // shuffle is on - play a random song
 
                     Random rand = new Random();
                     curSongPosition = rand.nextInt(listOfSongs.size());
                     initPlayer(curSongPosition);
 
-                }else {
+                } else {
                     // no repeat or shuffle ON - play next song
 
                     if (curSongPosition < listOfSongs.size() - 1) {
@@ -231,7 +249,7 @@ public class PlaySong extends AppCompatActivity {
         seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser){
+                if (fromUser) {
                     mediaPlayer.seekTo(progress);
                     seekbar.setProgress(progress);
                 }
@@ -270,10 +288,9 @@ public class PlaySong extends AppCompatActivity {
     }
 
     @SuppressLint("HandlerLeak")
-    Handler handler =new Handler(){
+    Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-//            Log.i("handler ", "handler called");
             int current_position = msg.what;
             seekbar.setProgress(current_position);
             String cTime = createTimeLabel(current_position);
@@ -281,22 +298,33 @@ public class PlaySong extends AppCompatActivity {
         }
     };
 
-    private void play() {
-        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
-            playIcon.setImageResource(R.drawable.ic_pause_black_24dp);
-            uri = Uri.parse(listOfSongs.get(position).getPath());
-            mediaPlayer.start();
+    @Override
+    protected void onPause() {
 
-        } else {
-            pause();
-        }
+        super.onPause();
+        unbindService(this);
     }
 
-    private void pause() {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            playIcon.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-        }
+    @Override
+    protected void onResume() {
+
+        Intent intent = new Intent(this, MusicService.class);
+        bindService(intent, this, BIND_AUTO_CREATE);
+        super.onResume();
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+
+        MusicService.MyBinder myBinder = (MusicService.MyBinder) service;
+        musicService = myBinder.getService();
+        musicService.setCallBack(this);
+
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        musicService = null;
     }
 
     public String createTimeLabel(int duration) {
@@ -311,39 +339,79 @@ public class PlaySong extends AppCompatActivity {
         return timeLabel;
     }
 
-//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-////            CharSequence name = getString(R.string.app_name);
-////            String description = getString(R.string.channel_description);
-////            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-////            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-////            channel.setDescription(description);
-////            // Register the channel with the system; you can't change the importance
-////            // or other notification behaviors after this
-////            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-////            notificationManager.createNotificationChannel(channel);
-////        }
-//    private void createNotification(String textContent) {
-//
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                // Show controls on lock screen even when user hides sensitive content.
-//                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-//                .setSmallIcon(R.drawable.ic_play_arrow_black_24dp)
-//                // Add media control buttons that invoke intents in your media service
-////                .addAction(R.drawable.ic_skip_previous_black_24dp, "Previous", ) // #0
-////                .addAction(R.drawable.ic_pause_black_24dp, "Pause", pausePendingIntent)  // #1
-////                .addAction(R.drawable.ic_skip_next_black_24dp, "Next", nextPendingIntent)     // #2
-//                .setSmallIcon(R.drawable.music)
-//                .setContentTitle(textContent)
-//                .setContentText("Playing")
-//                .setPriority(NotificationCompat.PRIORITY_LOW)
-//                // Set the intent that will fire when the user taps the notification
-//                .setAutoCancel(false);
-//
-//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-//
-//        // notificationId is a unique int for each notification that you must define
-//        notificationManager.notify(1, builder.build());
-//
-//
-//    }
+    private void createNotification(int playPause) {
+
+        Intent intent = new Intent(this, PlaySong.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        Intent prevIntent = new Intent(this, NotificationReceiver.class)
+                .setAction(ACTION_PREV);
+        PendingIntent prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent pauseIntent = new Intent(this, NotificationReceiver.class)
+                .setAction(ACTION_PLAY);
+        PendingIntent pausePendingIntent = PendingIntent.getBroadcast(this, 0, pauseIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent nextIntent = new Intent(this, NotificationReceiver.class)
+                .setAction(ACTION_NEXT);
+        PendingIntent nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        byte[] picture = null;
+        picture = getAlbumArt(listOfSongs.get(position).getPath());
+        Bitmap thumb = null;
+        if (picture != null) {
+            thumb = BitmapFactory.decodeByteArray(picture, 0, picture.length);
+        } else {
+            thumb = BitmapFactory.decodeResource(getResources(), R.drawable.music);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                // Show controls on lock screen even when user hides sensitive content.
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setSmallIcon(playPause)
+                .setLargeIcon(thumb)
+                .setContentTitle(listOfSongs.get(position).getTitle())
+                .setContentText(listOfSongs.get(position).getArtist())
+                // Add media control buttons that invoke intents in your media service
+                .addAction(R.drawable.ic_skip_previous_black_24dp, "Previous", prevPendingIntent) // #0
+                .addAction(playPause, "Pause", pausePendingIntent)  // #1
+                .addAction(R.drawable.ic_skip_next_black_24dp, "Next", nextPendingIntent)     // #2
+                .setSmallIcon(R.drawable.logo)
+                // Apply the media style template
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle().
+                        setMediaSession(mediaSession.getSessionToken()))
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                // Set the intent that will fire when the user taps the notification
+                .setAutoCancel(false)
+                .setOnlyAlertOnce(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        // notificationId is a unique int for each notification that you must define
+        notificationManager.notify(1, builder.build());
+
+    }
+
+    public byte[] getAlbumArt(String uri) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(uri);
+        byte[] art = retriever.getEmbeddedPicture();
+        retriever.release();
+        return art;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cancelAllNotification(getApplicationContext());
+    }
+
+    private void cancelAllNotification(Context applicationContext) {
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager nMgr = (NotificationManager) applicationContext.getSystemService(ns);
+        nMgr.cancelAll();
+    }
 }
